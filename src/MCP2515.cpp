@@ -15,6 +15,8 @@
 #define REG_CNF1                   0x2a
 
 #define REG_CANINTE                0x2b
+
+// Whenever changing the CANINTF register, use BIT MODIFY instead of WRITE.
 #define REG_CANINTF                0x2c
 
 #define FLAG_RXnIE(n)              (0x01 << n)
@@ -83,6 +85,7 @@ int MCP2515Class::begin(long baudRate)
   reset();
 
   writeRegister(REG_CANCTRL, 0x80);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
     return 0;
   }
@@ -139,10 +142,13 @@ int MCP2515Class::begin(long baudRate)
   writeRegister(REG_CANINTE, FLAG_RXnIE(1) | FLAG_RXnIE(0));
   writeRegister(REG_BFPCTRL, 0x00);
   writeRegister(REG_TXRTSCTRL, 0x00);
+
+  // A combination of RXM1 and RXM0 is "Turns mask/filters off; receives any message".
   writeRegister(REG_RXBnCTRL(0), FLAG_RXM1 | FLAG_RXM0);
   writeRegister(REG_RXBnCTRL(1), FLAG_RXM1 | FLAG_RXM0);
 
   writeRegister(REG_CANCTRL, 0x00);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x00) {
     return 0;
   }
@@ -309,6 +315,7 @@ int MCP2515Class::filter(int id, int mask)
 
   // config mode
   writeRegister(REG_CANCTRL, 0x80);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
     return 0;
   }
@@ -337,6 +344,7 @@ int MCP2515Class::filter(int id, int mask)
 
   // normal mode
   writeRegister(REG_CANCTRL, 0x00);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x00) {
     return 0;
   }
@@ -360,6 +368,7 @@ boolean MCP2515Class::setFilterRegisters(
 
   // config mode
   writeRegister(REG_CANCTRL, 0x80);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
     return false;
   }
@@ -386,6 +395,7 @@ boolean MCP2515Class::setFilterRegisters(
 
   // normal mode
   writeRegister(REG_CANCTRL, 0x00);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x00) {
     return false;
   }
@@ -400,6 +410,7 @@ int MCP2515Class::filterExtended(long id, long mask)
 
   // config mode
   writeRegister(REG_CANCTRL, 0x80);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
     return 0;
   }
@@ -428,6 +439,7 @@ int MCP2515Class::filterExtended(long id, long mask)
 
   // normal mode
   writeRegister(REG_CANCTRL, 0x00);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x00) {
     return 0;
   }
@@ -438,6 +450,7 @@ int MCP2515Class::filterExtended(long id, long mask)
 int MCP2515Class::observe()
 {
   writeRegister(REG_CANCTRL, 0x80);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
     return 0;
   }
@@ -448,6 +461,7 @@ int MCP2515Class::observe()
 int MCP2515Class::loopback()
 {
   writeRegister(REG_CANCTRL, 0x40);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x40) {
     return 0;
   }
@@ -458,6 +472,7 @@ int MCP2515Class::loopback()
 int MCP2515Class::sleep()
 {
   writeRegister(REG_CANCTRL, 0x01);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x01) {
     return 0;
   }
@@ -468,6 +483,7 @@ int MCP2515Class::sleep()
 int MCP2515Class::wakeup()
 {
   writeRegister(REG_CANCTRL, 0x00);
+  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x00) {
     return 0;
   }
