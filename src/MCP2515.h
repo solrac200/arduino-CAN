@@ -63,6 +63,7 @@ public:
   void setSPIFrequency(uint32_t frequency);
   void setClockFrequency(long clockFrequency);
 
+  void dumpImportantRegisters(Stream& out);
   void dumpRegisters(Stream& out);
 
 private:

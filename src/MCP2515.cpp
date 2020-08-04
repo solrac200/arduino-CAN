@@ -491,6 +491,73 @@ void MCP2515Class::setClockFrequency(long clockFrequency)
   _clockFrequency = clockFrequency;
 }
 
+void MCP2515Class::dumpImportantRegisters(Stream& out) {
+  out.print("TEC: ");
+  out.println(readRegister(0x1C), HEX);
+  out.print("REC: ");
+  out.println(readRegister(0x1D), HEX);
+  out.print("CANINTE: ");
+  out.println(readRegister(0x2B), HEX);
+
+  out.print("CANINTF: ");
+  uint8_t regCANINTF = readRegister(0x2C);
+  out.print(regCANINTF, HEX);
+  if (regCANINTF & 0x80) {
+    out.print(" MERRF");
+  }
+  if (regCANINTF & 0x40) {
+    out.print(" WAKIF");
+  }
+  if (regCANINTF & 0x20) {
+    out.print(" ERRIF");
+  }
+  if (regCANINTF & 0x10) {
+    out.print(" TX2IF");
+  }
+  if (regCANINTF & 0x08) {
+    out.print(" TX1IF");
+  }
+  if (regCANINTF & 0x04) {
+    out.print(" TX0IF");
+  }
+  if (regCANINTF & 0x02) {
+    out.print(" RX1IF");
+  }
+  if (regCANINTF & 0x01) {
+    out.print(" RX0IF");
+  }
+  out.println();
+
+  out.print("EFLG: ");
+  uint8_t regEFLG = readRegister(0x2D);
+  out.print(regEFLG, HEX);
+  if (regEFLG & 0x80) {
+    out.print(" RX1OVR");
+  }
+  if (regEFLG & 0x40) {
+    out.print(" RX0OVR");
+  }
+  if (regEFLG & 0x20) {
+    out.print(" TXBO");
+  }
+  if (regEFLG & 0x10) {
+    out.print(" TXEP");
+  }
+  if (regEFLG & 0x08) {
+    out.print(" RXEP");
+  }
+  if (regEFLG & 0x04) {
+    out.print(" TXWAR");
+  }
+  if (regEFLG & 0x02) {
+    out.print(" RXWAR");
+  }
+  if (regEFLG & 0x01) {
+    out.print(" EWARN");
+  }
+  out.println();
+}
+
 void MCP2515Class::dumpRegisters(Stream& out)
 {
   for (int i = 0; i < 128; i++) {
