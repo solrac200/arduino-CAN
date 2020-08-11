@@ -247,6 +247,17 @@ if ((packetId & mask) == id) {
 
 Returns `1` on success, `0` on failure.
 
+This patched version also supports setting MCP2515 registers directly:
+
+```
+CAN.setFilterRegisters(
+    mask0, filter0, filter1,
+    mask1, filter2, filter3, filter4, filter5,
+    allowRollover);
+```
+
+Please see the MCP2515 data sheet for more details on how these work.
+
 ## Other modes
 
 ### Loopback mode

@@ -1,7 +1,5 @@
 # Arduino CAN
 
-[![Build Status](https://travis-ci.org/sandeepmistry/arduino-CAN.svg?branch=master)](https://travis-ci.org/sandeepmistry/arduino-CAN)
-
 An Arduino library for sending and receiving data using CAN bus.
 
 ## Compatible Hardware
@@ -53,7 +51,7 @@ Requires an external 3.3V CAN transceiver, such as a [TI SN65HVD230](http://www.
 
 ```sh
 cd ~/Documents/Arduino/libraries/
-git clone https://github.com/sandeepmistry/arduino-CAN CAN
+git clone https://github.com/timurrrr/arduino-CAN CAN
 ```
 
 ## API
@@ -63,8 +61,6 @@ See [API.md](API.md).
 ## Examples
 
 See [examples](examples) folder.
-
-For OBD-II examples, checkout the [arduino-OBD2](https://github.com/sandeepmistry/arduino-OBD2) library's [examples](https://github.com/sandeepmistry/arduino-OBD2/examples).
 
 ## License
 
