@@ -1,24 +1,24 @@
 #include <CAN.h>
 
-// This is a demo program that sends messages over the can bus in
+// This is a demo program that sends messages over the CAN bus in
 // a way that resembles real messages you can receive if you listen
 // to messages on the CAN bus of a Subaru BRZ.
 //
-// This sketch was developed for Arduino Micro, but should be trivial
-// to tweak to support pretty much any other board.
+// It was tested on Arduino Micro and Adafruit ItsyBitsy nRF52840 Express, and
+// should be trivial to tweak to support pretty much any other board with SPI.
 //
 // Connections:
 //  BOARD | MCP2515
 //     5V   VCC
 //    GND   GND
-//  Pin 5   CS
-//  Pin 6   INT
+//  Pin 9   CS
+//  Pin 7   INT
 //     MO   SI
 //     MI   SO
 //    SCK   SCK
 
-const int CS_PIN = 5;
-const int IRQ_PIN = 6;
+const int CS_PIN = 9;
+const int IRQ_PIN = 7;
 const int QUARTZ_MHZ = 16;  // Some MCP2515 boards have 8 MHz quartz.
 const int SPI_MHZ = 8;
 
