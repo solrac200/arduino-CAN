@@ -40,17 +40,11 @@ Requires an external 3.3V CAN transceiver, such as a [TI SN65HVD230](http://www.
 
 ## Installation
 
-### Using the Arduino IDE Library Manager
-
-1. Choose `Sketch` -> `Include Library` -> `Manage Libraries...`
-2. Type `CAN` into the search box.
-3. Click the row to select the library.
-4. Click the `Install` button to install the library.
-
-### Using Git
+As this is a fork of https://github.com/sandeepmistry/arduino-CAN with
+additional patches, you have to use git to install this version of the library:
 
 ```sh
-cd ~/Documents/Arduino/libraries/
+cd ~/Documents/Arduino/libraries/  # ~/Arduino/libraries on Mac OS
 git clone https://github.com/timurrrr/arduino-CAN CAN
 ```
 
