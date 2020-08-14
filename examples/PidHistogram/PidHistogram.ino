@@ -4,21 +4,22 @@
 // periodically prints a list of PIDs observed, with counts how many times they
 // were observed.
 //
-// It was tested on Arduino Micro and Adafruit ItsyBitsy nRF52840 Express, and
-// should be trivial to tweak to support pretty much any other board with SPI.
+// It was tested on Arduino Uno, Arduino Micro, Adafruit Feather nRF52832 and
+// Adafruit ItsyBitsy nRF52840 Express, and should be trivial to tweak to
+// support pretty much any other board with SPI.
 //
 // Connections:
 //  BOARD | MCP2515
 //    USB   VCC
 //    GND   GND
-//  Pin 9   CS
-//  Pin 7   INT
+//  Pin 7   CS
+//  Pin 9   INT  // Unconnected is fine too, we don't use interrupts here.
 //     MO   SI
 //     MI   SO
 //    SCK   SCK
 
-const int CS_PIN = 9;
-const int IRQ_PIN = 7;
+const int CS_PIN = 7;
+const int IRQ_PIN = 9;
 const int QUARTZ_MHZ = 16;  // Some MCP2515 boards have 8 MHz quartz.
 const int SPI_MHZ = 8;
 
