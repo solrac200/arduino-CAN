@@ -54,10 +54,24 @@ void loop() {
   // Many PIDs are sent 50 times per second.
   uint16_t num_cycles_per_second = 50;
 
-  // 0x140 and 0x141 are intentionally duplicated in this array as they are sent 100 times
+  // 0x18, 0x140, 0x141 and 0x142 are intentionally duplicated in this array as they are sent 100 times
   // per second (double that for other PIDs) in the real car.
-  // TODO: 0x360 is actually sent 20 times per second.
-  uint16_t pids[] = {0x140, 0x141, 0xD0, 0xD1, 0xD4, 0xD5, 0x140, 0x141, 0x360};
+  uint16_t pids[] = {
+    // These are sent 100 times per second:
+    0x18, 0x140, 0x141, 0x142,
+    // These are sent 50 times per second:
+    0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0x144, 0x152, 0x156, 0x280,
+    // TODO: These are actually sent less frequently than 50 times per second:
+    0x282, // 16.7 times per second
+    0x284, // 10 times per second
+    0x360, // 20 times per second
+    // These are commented out so that we don't send way too many messages:
+    //0x361, // 20 times per second
+    //0x370, // 20 times per second
+    //0x372, // 10 times per second
+    // These are sent 100 times per second:
+    0x18, 0x140, 0x141, 0x142,
+  };
   uint16_t num_messages_per_cycle = sizeof(pids) / sizeof(pids[0]);
   uint16_t num_messages_per_second =
       num_cycles_per_second * num_messages_per_cycle;

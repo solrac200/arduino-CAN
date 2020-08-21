@@ -38,6 +38,7 @@ struct pid_entry {
 pid_entry observed_pids[MAX_NUM_CAN_PIDS]; // Keep sorted by PID.
 uint16_t num_unique_observed_pids = 0;
 
+uint32_t total_received_since_last_report;
 uint32_t last_report_printed_ms;
 
 void setup() {
@@ -85,6 +86,8 @@ void loop() {
 }
 
 void handle_message(uint32_t pid) {
+  total_received_since_last_report++;
+
   pid_entry *after_last = observed_pids + num_unique_observed_pids;
 
   // Use binary search to find the location where this PID should go in the
@@ -154,9 +157,11 @@ void print_report() {
     return;
   }
 
-  Serial.print("Number of unique observed PIDs since last report: ");
+  Serial.print("Received ");
+  Serial.print(total_received_since_last_report);
+  Serial.print(" messages (");
   Serial.print(num_unique_observed_pids);
-  Serial.println(".");
+  Serial.println(" unique PIDs) since last report:");
 
   for (uint16_t i = 0; i < num_unique_observed_pids; i++) {
     pid_entry *entry = &observed_pids[i];
@@ -181,4 +186,5 @@ void print_report() {
   Serial.println("");
 
   num_unique_observed_pids = 0;
+  total_received_since_last_report = 0;
 }
