@@ -27,7 +27,11 @@ public:
   MCP2515Class();
   virtual ~MCP2515Class();
 
-  virtual int begin(long baudRate);
+  int begin(long baudRate, bool stayInConfigurationMode);
+  virtual int begin(long baudRate) {
+    return begin(baudRate, /* stayInConfigurationMode= */ false);
+  }
+
   virtual void end();
 
   virtual int endPacket();
@@ -54,6 +58,8 @@ public:
   virtual int filterExtended(long id, long mask);
   // TODO: add setFilterRegistersExtended().
 
+  bool switchToNormalMode();
+  bool switchToConfigurationMode();
   virtual int observe();
   virtual int loopback();
   virtual int sleep();

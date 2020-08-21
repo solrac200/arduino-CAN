@@ -73,7 +73,7 @@ MCP2515Class::~MCP2515Class()
 {
 }
 
-int MCP2515Class::begin(long baudRate)
+int MCP2515Class::begin(long baudRate, bool stayInConfigurationMode)
 {
   CANControllerClass::begin(baudRate);
 
@@ -84,9 +84,7 @@ int MCP2515Class::begin(long baudRate)
 
   reset();
 
-  writeRegister(REG_CANCTRL, 0x80);
-  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
-  if (readRegister(REG_CANCTRL) != 0x80) {
+  if (!switchToConfigurationMode()) {
     return 0;
   }
 
@@ -147,10 +145,10 @@ int MCP2515Class::begin(long baudRate)
   writeRegister(REG_RXBnCTRL(0), FLAG_RXM1 | FLAG_RXM0);
   writeRegister(REG_RXBnCTRL(1), FLAG_RXM1 | FLAG_RXM0);
 
-  writeRegister(REG_CANCTRL, 0x00);
-  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
-  if (readRegister(REG_CANCTRL) != 0x00) {
-    return 0;
+  if (!stayInConfigurationMode) {
+    if (!switchToNormalMode()) {
+      return 0;
+    }
   }
 
   return 1;
@@ -405,10 +403,7 @@ boolean MCP2515Class::setFilterRegisters(
   filter4 &= 0x7ff;
   filter5 &= 0x7ff;
 
-  // config mode
-  writeRegister(REG_CANCTRL, 0x80);
-  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
-  if (readRegister(REG_CANCTRL) != 0x80) {
+  if (!switchToConfigurationMode()) {
     return false;
   }
 
@@ -432,10 +427,7 @@ boolean MCP2515Class::setFilterRegisters(
     writeRegister(REG_RXFnEID0(n), 0);
   }
 
-  // normal mode
-  writeRegister(REG_CANCTRL, 0x00);
-  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
-  if (readRegister(REG_CANCTRL) != 0x00) {
+  if (!switchToNormalMode()) {
     return false;
   }
 
@@ -486,8 +478,22 @@ int MCP2515Class::filterExtended(long id, long mask)
   return 1;
 }
 
+bool MCP2515Class::switchToNormalMode() {
+  // TODO: Should we use modifyRegister(REG_CANCTRL, 0xe0, 0x00) here instead?
+  writeRegister(REG_CANCTRL, 0x00);
+  return (readRegister(REG_CANCTRL) & 0xe0) == 0x00;
+}
+
+bool MCP2515Class::switchToConfigurationMode()
+{
+  // TODO: Should we use modifyRegister(REG_CANCTRL, 0xe0, 0x80) here instead?
+  writeRegister(REG_CANCTRL, 0x80);
+  return (readRegister(REG_CANCTRL) & 0xe0) == 0x80;
+}
+
 int MCP2515Class::observe()
 {
+  // TODO: These should probably be 0x60, not 0x80.
   writeRegister(REG_CANCTRL, 0x80);
   // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
   if (readRegister(REG_CANCTRL) != 0x80) {
