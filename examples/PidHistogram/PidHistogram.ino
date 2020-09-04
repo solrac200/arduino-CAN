@@ -10,13 +10,13 @@
 //
 // Connections:
 //  BOARD | MCP2515
-//    USB   VCC
-//    GND   GND
-//  Pin 7   CS
-//  Pin 9   INT  // Unconnected is fine too, we don't use interrupts here.
-//     MO   SI
-//     MI   SO
-//    SCK   SCK
+//   3.3V | VCC
+//    GND | GND
+//  Pin 7 | CS
+//  Pin 9 | INT  // Unconnected is fine too, we don't use interrupts here.
+//     MO | SI
+//     MI | SO
+//    SCK | SCK
 
 const int CS_PIN = 7;
 const int IRQ_PIN = 9;
