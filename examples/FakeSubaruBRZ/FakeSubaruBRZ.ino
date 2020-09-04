@@ -4,6 +4,9 @@
 // a way that resembles real messages you can receive if you listen
 // to messages on the CAN bus of a Subaru BRZ.
 //
+// DO NOT USE IT IN THE CAN NETWORK OF A REAL VEHICLE as it can cause unexpected
+// side effects.
+//
 // It was tested on Arduino Uno, Arduino Micro, Adafruit Feather nRF52832 and
 // Adafruit ItsyBitsy nRF52840 Express, and should be trivial to tweak to
 // support pretty much any other board with SPI.
