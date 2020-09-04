@@ -9,14 +9,14 @@
 // support pretty much any other board with SPI.
 //
 // Connections:
-//  BOARD | MCP2515
-//   3.3V | VCC
-//    GND | GND
-//  Pin 7 | CS
-//  Pin 9 | INT  // Unconnected is fine too, we don't use interrupts here.
-//     MO | SI
-//     MI | SO
-//    SCK | SCK
+//  MCP | BOARD
+//  INT | Not used, can connect to Pin 9
+//  SCK | SCK
+//   SI | MO
+//   SO | MI
+//   CS | Pin 7
+//  GND | GND
+//  VCC | 3.3V
 
 const int CS_PIN = 7;
 const int IRQ_PIN = 9;
