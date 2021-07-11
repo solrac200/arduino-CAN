@@ -51,8 +51,12 @@ void setup() {
 }
 
 // Forward declaration for a helper.
-void generate_payload(uint16_t pid, uint8_t payload);
+void try_to_receive_data();
+void generate_payload(uint16_t pid, uint8_t *payload);
+boolean send_data(uint16_t pid, uint8_t *payload, uint8_t len);
 
+// TODO: Refactor the loop() function. It should first try to see if there's anything to send,
+// then if there's anything to receive.
 void loop() {
   // Many PIDs are sent 50 times per second.
   uint16_t num_cycles_per_second = 50;
@@ -83,27 +87,92 @@ void loop() {
   unsigned long num_messages_sent = 0;
   for (int i = 0; i < num_messages_per_cycle; i++, num_messages_sent++) {
     uint16_t pid = pids[i];
-    if (!CAN.beginPacket(pid)) {
-      Serial.println("beginPacket() failed.");
-    }
-
     uint8_t payload[8];
     generate_payload(pid, payload);
-    CAN.write(payload, 8);
-    if (!CAN.endPacket()) {
-      Serial.println("endPacket() failed.");
+
+    if (!send_data(pid, payload, 8)) {
+      Serial.println("Failed to send a message");
     }
 
     unsigned long next_message_time_micros =
         first_message_sent_micros
             + (num_messages_sent * 1000000) / num_messages_per_second;
-    unsigned long time_till_next_message_micros =
-        next_message_time_micros - micros();
-    // Theoretically, the clock can be ticking faster than we can send data.
-    // The overflow-safe math is tricky.
-    if ((long)time_till_next_message_micros > 0) {
-      delayMicroseconds(time_till_next_message_micros);
+    if ((long)(micros() - next_message_time_micros) < 0) {
+      try_to_receive_data();
+      delayMicroseconds(10);
     }
+  }
+}
+
+boolean send_data(uint16_t id, uint8_t *payload, uint8_t len) {
+  if (!CAN.beginPacket(id)) {
+    Serial.println("beginPacket() failed.");
+    return false;
+  }
+
+  CAN.write(payload, len);
+  if (!CAN.endPacket()) {
+    Serial.println("endPacket() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+void try_to_receive_data() {
+  int packet_size = CAN.parsePacket();
+  if (packet_size <= 0) {
+    return;
+  }
+
+  if (CAN.packetRtr()) {
+    // Ignore RTRs.
+    return;
+  }
+
+  uint32_t id = CAN.packetId();
+  uint8_t data[8] = {0};
+  int data_length = 0;
+  while (data_length < packet_size && data_length < sizeof(data)) {
+    int byte_read = CAN.read();
+    if (byte_read == -1) {
+      break;
+    }
+
+    data[data_length++] = byte_read;
+  }
+
+  if (id == 0x7C0 && data[0] == 0x2 && data[1] == 0x21 && data[2] == 0x29) {
+    // 0x7C0 / 0x2129 — Returns fuel level in liters x2.
+    uint8_t response[8] = {0};
+    response[0] = 0x3;
+    response[1] = 0x61;
+    response[2] = 0x29;
+    response[3] = 0x1C;
+    send_data(0x7C8, response, 8);
+    return;
+  }
+
+  if (id == 0x7DF && data[0] == 0x2 && data[1] == 0x01 && data[2] == 0x0f) {
+    // 0x7DF / 0x010F — Returns (intake temperature in ºC + 40)
+    uint8_t response[8] = {0};
+    response[0] = 0x3;
+    response[1] = 0x41;
+    response[2] = 0x0f;
+    response[3] = 40 + 36;  // 36 ºC
+    send_data(0x7E8, response, 8);
+    return;
+  }
+
+  if (id == 0x7DF && data[0] == 0x2 && data[1] == 0x01 && data[2] == 0x46) {
+    // 0x7DF / 0x0146 — Returns (air temperature in ºC + 40)
+    uint8_t response[8] = {0};
+    response[0] = 0x3;
+    response[1] = 0x41;
+    response[2] = 0x46;
+    response[3] = 40 + 27;  // 27 ºC
+    send_data(0x7E8, response, 8);
+    return;
   }
 }
 
