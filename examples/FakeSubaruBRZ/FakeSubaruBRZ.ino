@@ -58,6 +58,14 @@ public:
   }
 
   void scheduleNextFrame(uint16_t pid, uint8_t *data, uint8_t len) {
+    if (has_continuation_frame) {
+      Serial.print("Scheduling new frame, even though there is one pending already. Original was ");
+      if (original_frame_acked) {
+        Serial.println("acked.");
+      } else {
+        Serial.println("NOT acked.");
+      }
+    }
     has_continuation_frame = true;
     original_frame_acked = false;
     next_frame_pid = pid;
@@ -226,8 +234,8 @@ void try_to_receive_data() {
     return;
   }
 
-  if (id == 0x750 && data[0] == 0x2a) {
-    if (data[1] == 0x02 && data[2] == 0x21) {
+  if (id == 0x750 && data_length >= 1 && data[0] == 0x2a) {
+    if (data_length >= 3 && data[1] == 0x02 && data[2] == 0x21) {
       if (data[3] == 0x30) {
         // TPMS pressures request.
         uint8_t response[8] = {0};
@@ -273,7 +281,7 @@ void try_to_receive_data() {
         response[7] = 0x00;
         fake_tpms_ecu.scheduleNextFrame(0x758, response, 8);
       }
-    } else if (data[1] == 0x30 && data[2] == 0x00) {
+    } else if (data_length >= 3 && data[1] == 0x30 && data[2] == 0x00) {
       fake_tpms_ecu.handleFrameAck(data[3]);
     }
   }
@@ -334,8 +342,22 @@ void generate_payload(uint16_t pid, uint8_t *payload) {
 
     case 0xD4: {
       // Wheel speed sensors / ABS sensors.
-      // TODO: fill out similar to speed in 0xD1.
-      // They are in the FL, FR, RL, RR order.
+      uint16_t value = (uint16_t)(10 * 61);
+      payload[0] = value & 0xFF;
+      payload[1] = (value >> 8) & 0xFF;
+
+      value = (uint16_t)(10 * 62);
+      payload[2] = value & 0xFF;
+      payload[3] = (value >> 8) & 0xFF;
+
+      value = (uint16_t)(10 * 63);
+      payload[4] = value & 0xFF;
+      payload[5] = (value >> 8) & 0xFF;
+
+      value = (uint16_t)(10 * 64);
+      payload[6] = value & 0xFF;
+      payload[7] = (value >> 8) & 0xFF;
+      break;
     }
 
     case 0x140: {
@@ -353,6 +375,7 @@ void generate_payload(uint16_t pid, uint8_t *payload) {
       uint16_t rpm = 3456;
       payload[2] = rpm & 0xFF;
       payload[3] = (rpm >> 8) & 0x3F;
+      break;
     }
 
     case 0x360: {
@@ -361,6 +384,7 @@ void generate_payload(uint16_t pid, uint8_t *payload) {
 
       uint8_t coolant_temperature_celsius = 90;
       payload[3] = coolant_temperature_celsius + 40;
+      break;
     }
   }
 }
