@@ -50,6 +50,56 @@ void setup() {
   Serial.println("CAN controller connected");
 }
 
+class FakeTpmsEcu {
+public:
+  FakeTpmsEcu() {
+    has_continuation_frame = false;
+    original_frame_acked = false;
+  }
+
+  void scheduleNextFrame(uint16_t pid, uint8_t *data, uint8_t len) {
+    has_continuation_frame = true;
+    original_frame_acked = false;
+    next_frame_pid = pid;
+    memcpy(next_frame_data, data, len);
+    next_frame_length = len;
+  }
+
+  void handleFrameAck(uint8_t separation_time_millis = 0) {
+    if (!has_continuation_frame) {
+      return;
+    }
+
+    original_frame_acked = true;
+    next_frame_timestamp_millis = millis() + separation_time_millis;
+  }
+
+  void sendNextFrameIfNeeded() {
+    if (!has_continuation_frame || !original_frame_acked) {
+      return;
+    }
+
+    // Unsigned math magic to check if "time_diff" is "negative":
+    unsigned long time_diff = millis() - next_frame_timestamp_millis;
+    if (time_diff >> (8 * sizeof(time_diff) - 1)) {
+      return;
+    }
+
+    send_data(next_frame_pid, next_frame_data, next_frame_length);
+    has_continuation_frame = false;
+    original_frame_acked = false;
+  }
+
+private:
+  bool has_continuation_frame;
+  uint16_t next_frame_pid;
+  uint8_t next_frame_data[8];
+  uint8_t next_frame_length;
+
+  bool original_frame_acked;
+  unsigned long next_frame_timestamp_millis;
+} fake_tpms_ecu;
+
 // Forward declaration for a helper.
 void try_to_receive_data();
 void generate_payload(uint16_t pid, uint8_t *payload);
@@ -99,6 +149,7 @@ void loop() {
             + (num_messages_sent * 1000000) / num_messages_per_second;
     if ((long)(micros() - next_message_time_micros) < 0) {
       try_to_receive_data();
+      fake_tpms_ecu.sendNextFrameIfNeeded();
       delayMicroseconds(10);
     }
   }
@@ -173,6 +224,58 @@ void try_to_receive_data() {
     response[3] = 40 + 27;  // 27 ºC
     send_data(0x7E8, response, 8);
     return;
+  }
+
+  if (id == 0x750 && data[0] == 0x2a) {
+    if (data[1] == 0x02 && data[2] == 0x21) {
+      if (data[3] == 0x30) {
+        // TPMS pressures request.
+        uint8_t response[8] = {0};
+        response[0] = 0x2a;
+        response[1] = 0x10;  // "1" means "first frame in a sequence"
+        response[2] = 0x07;
+        response[3] = 0x61;
+        response[4] = 0x30;
+        response[5] = 0xAB;  // ~34 psi
+        response[6] = 0xAC;  // ~34 psi
+        response[7] = 0xAD;  // ~34 psi
+        send_data(0x758, response, 8);
+
+        response[0] = 0x2a;
+        response[1] = 0x21;  // "2" means "continuation frame", "1" means "first continuation frame".
+        response[2] = 0xAE;  // ~34 psi
+        response[3] = 0x00;
+        response[4] = 0x00;
+        response[5] = 0x00;
+        response[6] = 0x00;
+        response[7] = 0x00;
+        fake_tpms_ecu.scheduleNextFrame(0x758, response, 8);
+      } else if (data[3] == 0x16) {
+        // TPMS temperatures request.
+        uint8_t response[8] = {0};
+        response[0] = 0x2a;
+        response[1] = 0x10;  // "1" means "first frame in a sequence"
+        response[2] = 0x07;
+        response[3] = 0x61;
+        response[4] = 0x16;
+        response[5] = 40 + 21;  // 21ºC
+        response[6] = 40 + 22;  // 22ºC
+        response[7] = 40 + 23;  // 23ºC
+        send_data(0x758, response, 8);
+
+        response[0] = 0x2a;
+        response[1] = 0x21;  // "2" means "continuation frame", "1" means "first continuation frame".
+        response[2] = 40 + 24;  // 24ºC
+        response[3] = 0x00;
+        response[4] = 0x00;
+        response[5] = 0x00;
+        response[6] = 0x00;
+        response[7] = 0x00;
+        fake_tpms_ecu.scheduleNextFrame(0x758, response, 8);
+      }
+    } else if (data[1] == 0x30 && data[2] == 0x00) {
+      fake_tpms_ecu.handleFrameAck(data[3]);
+    }
   }
 }
 
