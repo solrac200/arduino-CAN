@@ -21,7 +21,7 @@ An Arduino library for sending and receiving data using CAN bus.
 | INT | 2 |
 
 
-`CS` and `INT` pins can be changed by using `CAN.setPins(cs, irq)`. `INT` pin is optional, it is only needed for receive callback mode. If `INT` pin is used, it **must** be interrupt capable via [`attachInterrupt(...)`](https://www.arduino.cc/en/Reference/AttachInterrupt).
+`CS` and `INT` pins can be changed by using `CAN.setPins(cs, irq)`. `INT` pin is optional, it is only needed for receive callback mode. If `INT` pin is used, it **must** be interrupt capable via [`attachInterrupt(...)`](https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/).
 
 **NOTE**: Logic level converters must be used for boards which operate at 3.3V.
 
@@ -33,8 +33,8 @@ Requires an external 3.3V CAN transceiver, such as a [TI SN65HVD230](http://www.
 | :-------------: | :---: |
 | 3V3 | 3V3 |
 | GND | GND |
-| CTX | 5 |
-| CRX | 4 |
+| CTX | GPIO_5 |
+| CRX | GPIO_4 |
 
 `CTX` and `CRX` pins can be changed by using `CAN.setPins(rx, tx)`.
 
