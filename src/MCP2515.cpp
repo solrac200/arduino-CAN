@@ -493,10 +493,8 @@ bool MCP2515Class::switchToConfigurationMode()
 
 int MCP2515Class::observe()
 {
-  // TODO: These should probably be 0x60, not 0x80.
-  writeRegister(REG_CANCTRL, 0x80);
-  // TODO: The requested mode must be verified by reading the OPMODE[2:0] bits (CANSTAT[7:5])
-  if (readRegister(REG_CANCTRL) != 0x80) {
+  writeRegister(REG_CANCTRL, 0x60);
+  if (readRegister(REG_CANCTRL) != 0x60) {
     return 0;
   }
 
@@ -662,7 +660,7 @@ void MCP2515Class::handleInterrupt()
     return;
   }
 
-  while (parsePacket()) {
+  while (parsePacket() || _rxId != -1) {
     _onReceive(available());
   }
 }
